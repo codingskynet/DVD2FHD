@@ -1,0 +1,43 @@
+#!/bin/bash
+video=() # Add video lists
+
+waifu2x_path='./waifu2x'
+sharpen_path='./Sharpen.py' 
+
+for v in "${video[@]}"; do
+
+echo "Start $v"
+
+filename="$(basename "$v" ".*")"
+
+if [ -d "tmp_$filename" ]; then
+    echo "Folder already exist. Please remove it before continue process"
+    exit
+fi
+
+mkdir "tmp_$filename"
+cd "tmp_$filename"
+
+mkdir frames
+ffmpeg -i "$v" -f image2 "./frames/%06d.png"
+find "$(cd frames; pwd)" -name "*.png" | sort > frames.txt
+echo "Finished extract frames from video"
+
+ffmpeg -i "$v" -acodec copy audio.aac
+echo "Finished extract audio from video"
+
+python "$sharpen_path" "./frames.txt"
+echo "Finished sharpening frames"
+
+mkdir new_frames
+th "$waifu2x_path/waifu2x.lua" -force_cudnn 1 -model_dir "$waifu2x_path/models/photo" -m noise_scale -noise_level 3 -resume 1 -l frames.txt -o 'new_frames/%06d.png'
+
+ffmpeg -f image2 -framerate 29.97 -i "new_frames/%06d.png" -i audio.aac -r 29.97 -vcodec mpeg4 -acodec copy -crf 16 "../$filename.mp4"
+echo "$v: Finised all processes"
+cd ..
+rm -rf "tmp_$filename"
+
+done
+
+#cd ..
+#rm -rf "tmp_$filename"
