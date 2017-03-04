@@ -9,8 +9,6 @@ More details in [my blog](http://alphago.pe.kr/entry/%ED%99%9C%EC%9A%A9-Image-Su
 ### How-to-use?
 
 0. Prepare: python, torch, CUDA, cuDNN, ffmpeg
-
-
 1. Modify DVD2FHD(bash file) for your need
 2. Run bash file
 3. Check result files! (files are same name to first name)
